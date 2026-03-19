@@ -14,7 +14,16 @@
     <div class="score-panel">
       <div class="panel-item">Score: <span id="score">0</span></div>
       <div class="panel-item">Time: <span id="time">30</span>s</div>
-      <div class="panel-item">Lives: <span id="lives">❤️❤️❤️❤️❤️</span></div>
+      <div class="panel-item">Lives: <span id="lives">5 ❤️</span></div>
+
+      <div class="panel-item difficulty-box">
+        <label for="difficulty">Mode:</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
 
       <div class="button-wrap">
         <button id="start-btn">Start Game</button>
@@ -27,7 +36,17 @@
     <div id="game-container">
       <div id="basket"></div>
     </div>
+
+    <footer class="game-footer">
+      <p>Learn more about charity: water:</p>
+      <a href="https://www.charitywater.org/main" target="_blank">Official Website</a>
+      <a href="https://www.charitywater.org/donate" target="_blank">Donate</a>
+    </footer>
   </div>
+
+  <audio id="catch-sound" src="catch.mp3"></audio>
+  <audio id="miss-sound" src="miss.mp3"></audio>
+  <audio id="win-sound" src="win.mp3"></audio>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="script.js"></script>

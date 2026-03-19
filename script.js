@@ -8,11 +8,17 @@ let timeLeft = 30;
 let lives = 5;
 let basketX = 0;
 let activeDrops = [];
-
 let leftPressed = false;
 let rightPressed = false;
+let currentWinScore = 120;
+let reachedMilestones = [];
 
-const WIN_SCORE = 120;
+const milestones = [
+  { score: 30, message: "Great start!" },
+  { score: 60, message: "Halfway there!" },
+  { score: 90, message: "Almost there!" },
+  { score: 120, message: "You filled the future!" }
+];
 
 const startBtn = document.getElementById("start-btn");
 const resetBtn = document.getElementById("reset-btn");
@@ -22,9 +28,22 @@ const livesDisplay = document.getElementById("lives");
 const gameContainer = document.getElementById("game-container");
 const messageDisplay = document.getElementById("message");
 const basket = document.getElementById("basket");
+const difficultySelect = document.getElementById("difficulty");
 
-startBtn.addEventListener("click", startGame);
-resetBtn.addEventListener("click", resetGame);
+const catchSound = document.getElementById("catch-sound");
+const missSound = document.getElementById("miss-sound");
+const clickSound = document.getElementById("click-sound");
+const winSound = document.getElementById("win-sound");
+
+startBtn.addEventListener("click", () => {
+  playSound(clickSound);
+  startGame();
+});
+
+resetBtn.addEventListener("click", () => {
+  playSound(clickSound);
+  resetGame();
+});
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") {
@@ -48,6 +67,61 @@ document.addEventListener("keyup", (event) => {
   }
 });
 
+function playSound(sound) {
+  if (!sound) return;
+
+  sound.currentTime = 0;
+  sound.play().catch(() => {});
+}
+
+function getDifficultySettings() {
+  const mode = difficultySelect.value;
+
+  if (mode === "easy") {
+    return {
+      winScore: 80,
+      dropInterval: 1050,
+      speedMin: 1.2,
+      speedMax: 1.8,
+      startTime: 35
+    };
+  }
+
+  if (mode === "hard") {
+    return {
+      winScore: 140,
+      dropInterval: 700,
+      speedMin: 2.0,
+      speedMax: 2.8,
+      startTime: 25
+    };
+  }
+
+  return {
+    winScore: 120,
+    dropInterval: 900,
+    speedMin: 1.6,
+    speedMax: 2.2,
+    startTime: 30
+  };
+}
+
+function checkMilestones() {
+  for (let i = 0; i < milestones.length; i++) {
+    const milestone = milestones[i];
+
+    if (
+      score >= milestone.score &&
+      !reachedMilestones.includes(milestone.score) &&
+      milestone.score <= currentWinScore
+    ) {
+      reachedMilestones.push(milestone.score);
+      setMessage(milestone.message, "#FF902A");
+      break;
+    }
+  }
+}
+
 function startGame() {
   if (gameRunning) return;
 
@@ -55,10 +129,14 @@ function startGame() {
   clearDrops();
 
   gameRunning = true;
+  const settings = getDifficultySettings();
+  currentWinScore = settings.winScore;
+
   score = 0;
-  timeLeft = 30;
+  timeLeft = settings.startTime;
   lives = 5;
   activeDrops = [];
+  reachedMilestones = [];
   leftPressed = false;
   rightPressed = false;
 
@@ -66,7 +144,7 @@ function startGame() {
   updateDisplay();
   setMessage("Use the left and right arrow keys to move the basket.", "#159A48");
 
-  dropMaker = setInterval(createDrop, 900);
+  dropMaker = setInterval(createDrop, settings.dropInterval);
 
   timerInterval = setInterval(() => {
     if (!gameRunning) return;
@@ -91,6 +169,7 @@ function resetGame() {
   timeLeft = 30;
   lives = 5;
   activeDrops = [];
+  reachedMilestones = [];
   leftPressed = false;
   rightPressed = false;
 
@@ -150,7 +229,8 @@ function createDrop() {
   const containerWidth = gameContainer.offsetWidth;
   const x = Math.random() * (containerWidth - size);
   const y = -size;
-  const speed = Math.random() * 1.0 + 1.6;
+  const settings = getDifficultySettings();
+  const speed = Math.random() * (settings.speedMax - settings.speedMin) + settings.speedMin;
 
   drop.style.width = `${size}px`;
   drop.style.height = `${size}px`;
@@ -196,16 +276,19 @@ function moveDrops() {
         lives--;
         setMessage("Oops! Polluted water hit the basket.", "#F5402C");
         flashContainer("flash-bad");
+        playSound(missSound);
       } else {
         score += 10;
         setMessage("Nice! You collected clean water.", "#159A48");
         flashContainer("flash-good");
+        playSound(catchSound);
+        checkMilestones();
       }
 
       updateDisplay();
       removeDrop(i);
 
-      if (score >= WIN_SCORE) {
+      if (score >= currentWinScore) {
         endGame(true);
         return;
       }
@@ -222,6 +305,7 @@ function moveDrops() {
       if (!drop.isBad) {
         lives--;
         setMessage("You missed a clean drop!", "#F5402C");
+        playSound(missSound);
         updateDisplay();
 
         if (lives <= 0) {
@@ -251,11 +335,7 @@ function clearDrops() {
 function updateDisplay() {
   scoreDisplay.textContent = score;
   timeDisplay.textContent = timeLeft;
-
-  let hearts = "";
-  for (let i = 0; i < lives; i++) hearts += "❤️";
-  for (let i = lives; i < 5; i++) hearts += "🩶";
-  livesDisplay.textContent = hearts;
+  livesDisplay.textContent = `${lives} ❤️`;
 }
 
 function setMessage(text, color) {
@@ -279,10 +359,11 @@ function endGame(isWin = false, customMessage = "") {
   clearDrops();
 
   if (isWin) {
-    score = WIN_SCORE;
+    score = currentWinScore;
     updateDisplay();
     launchConfetti();
-    setMessage(`You win! Final score: ${WIN_SCORE}.`, "#159A48");
+    playSound(winSound);
+    setMessage(`You win! Final score: ${currentWinScore}.`, "#159A48");
     return;
   }
 

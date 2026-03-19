@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fill the Future</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="game-wrapper">
+    <h1 class="game-title">Fill the Future</h1>
+    <p class="game-tagline">Catch the good drops, avoid the bad ones!</p>
+
+    <div class="score-panel">
+      <div class="panel-item">Score: <span id="score">0</span></div>
+      <div class="panel-item">Time: <span id="time">30</span>s</div>
+      <div class="panel-item">Lives: <span id="lives">❤️❤️❤️❤️❤️</span></div>
+
+      <div class="button-wrap">
+        <button id="start-btn">Start Game</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </div>
+
+    <div id="message">Press Start, then use the left and right arrow keys.</div>
+
+    <div id="game-container">
+      <div id="basket"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
